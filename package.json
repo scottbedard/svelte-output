@@ -1,0 +1,12 @@
+{
+  "name": "svelte-output",
+  "scripts": {
+    "compile": "node compile.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Scott Bedard",
+  "license": "MIT",
+  "devDependencies": {
+    "svelte": "^1.42.1"
+  }
+}
