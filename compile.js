@@ -12,12 +12,22 @@ getDirectories(path.resolve(__dirname, 'components')).forEach((dir) => {
     // read in our source file
     const source = fs.readFileSync(path.resolve(__dirname, dir, 'Source.html'), 'utf8');
 
-    // compile the component to an es module
-    const output = svelte.compile(source, {
+    // compile the component to an umd & es modules
+    const umdOutput = svelte.compile(source, {
         name: 'Component',
         format: 'umd',
     });
 
+    const esmOutput = svelte.compile(source, {
+        name: 'Component',
+        format: 'es',
+    });
+    
+    // save the resulting code
+    fs.writeFileSync(path.resolve(__dirname, dir, 'Component.js'), umdOutput.code);
+    fs.writeFileSync(path.resolve(__dirname, dir, 'Component.esm.js'), esmOutput.code);
+
+    // create a simple example page
     fs.writeFileSync(path.resolve(__dirname, dir, 'index.html'), `
         <!doctype html>
         <html>
@@ -26,7 +36,7 @@ getDirectories(path.resolve(__dirname, 'components')).forEach((dir) => {
 
                 <ul>
                     <li><a href="file:///C:/git/svelte-output/components">Components</a></li>
-                    <li><a href="./Component.js">View compiled code</a></li>
+                    <li><a href="./Component.esm.js">View compiled code</a></li>
                 </ul>
 
                 <hr />
@@ -44,7 +54,6 @@ getDirectories(path.resolve(__dirname, 'components')).forEach((dir) => {
         </html>
     `);
 
-    // save the resulting code and provide some feedback that it worked
-    fs.writeFileSync(path.resolve(__dirname, dir, 'Component.js'), output.code);
+    // and finally, provide some feedback that we're done
     console.log ('Compiled: ' + dir);
 });
