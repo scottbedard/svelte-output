@@ -5,16 +5,34 @@
 	(global.Component = factory());
 }(this, (function () { "use strict";
 
+	var methods = {
+    doStuff() {
+        console.log ('hello');
+    }
+};
+
 	function create_main_fragment(state, component) {
-		var div;
+		var div, button;
+
+		function click_handler(event) {
+			component.doStuff();
+		}
 
 		return {
 			c: function create() {
 				div = createElement("div");
+				button = createElement("button");
+				button.textContent = "click me";
+				this.h();
+			},
+
+			h: function hydrate() {
+				addListener(button, "click", click_handler);
 			},
 
 			m: function mount(target, anchor) {
 				insertNode(div, target, anchor);
+				appendNode(button, div);
 			},
 
 			p: noop,
@@ -23,7 +41,9 @@
 				detachNode(div);
 			},
 
-			d: noop
+			d: function destroy() {
+				removeListener(button, "click", click_handler);
+			}
 		};
 	}
 
@@ -39,7 +59,7 @@
 		}
 	}
 
-	assign(Component.prototype, {
+	assign(Component.prototype, methods, {
 	 	destroy: destroy,
 	 	get: get,
 	 	fire: fire,
@@ -58,14 +78,26 @@
 		return document.createElement(name);
 	}
 
+	function addListener(node, event, handler) {
+		node.addEventListener(event, handler, false);
+	}
+
 	function insertNode(node, target, anchor) {
 		target.insertBefore(node, anchor);
+	}
+
+	function appendNode(node, target) {
+		target.appendChild(node);
 	}
 
 	function noop() {}
 
 	function detachNode(node) {
 		node.parentNode.removeChild(node);
+	}
+
+	function removeListener(node, event, handler) {
+		node.removeEventListener(event, handler, false);
 	}
 
 	function init(component, options) {
