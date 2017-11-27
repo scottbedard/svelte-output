@@ -3,6 +3,67 @@
 function create_main_fragment(state, component) {
 	var div;
 
+	var parent = state.parent;
+
+	var each_blocks = [];
+
+	for (var i = 0; i < parent.length; i += 1) {
+		each_blocks[i] = create_each_block(state, parent, parent[i], i, component);
+	}
+
+	return {
+		c: function create() {
+			div = createElement("div");
+
+			for (var i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+		},
+
+		m: function mount(target, anchor) {
+			insertNode(div, target, anchor);
+
+			for (var i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(div, null);
+			}
+		},
+
+		p: function update(changed, state) {
+			var parent = state.parent;
+
+			if (changed.parent) {
+				for (var i = each_blocks.length; i < parent.length; i += 1) {
+					each_blocks[i] = create_each_block(state, parent, parent[i], i, component);
+					each_blocks[i].c();
+					each_blocks[i].m(div, null);
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].u();
+					each_blocks[i].d();
+				}
+				each_blocks.length = parent.length;
+			}
+		},
+
+		u: function unmount() {
+			detachNode(div);
+
+			for (var i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].u();
+			}
+		},
+
+		d: function destroy() {
+			destroyEach(each_blocks);
+		}
+	};
+}
+
+// (2:4) {{#each parent as child}}
+function create_each_block(state, parent, child, child_index, component) {
+	var div;
+
 	return {
 		c: function create() {
 			div = createElement("div");
@@ -11,8 +72,6 @@ function create_main_fragment(state, component) {
 		m: function mount(target, anchor) {
 			insertNode(div, target, anchor);
 		},
-
-		p: noop,
 
 		u: function unmount() {
 			detachNode(div);
@@ -57,11 +116,17 @@ function insertNode(node, target, anchor) {
 	target.insertBefore(node, anchor);
 }
 
-function noop() {}
-
 function detachNode(node) {
 	node.parentNode.removeChild(node);
 }
+
+function destroyEach(iterations) {
+	for (var i = 0; i < iterations.length; i += 1) {
+		if (iterations[i]) iterations[i].d();
+	}
+}
+
+function noop() {}
 
 function init(component, options) {
 	component._observers = { pre: blankObject(), post: blankObject() };

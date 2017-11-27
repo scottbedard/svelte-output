@@ -8,22 +8,57 @@
 	function create_main_fragment(state, component) {
 		var div;
 
+		var if_block = (state.foo) && create_if_block(state, component);
+
 		return {
 			c: function create() {
 				div = createElement("div");
-				this.h();
+				if (if_block) if_block.c();
 			},
 
-			h: function hydrate() {
-				div.dataset.foo = "bar";
-				div.dataset.helloWorld = "yar";
+			m: function mount(target, anchor) {
+				insertNode(div, target, anchor);
+				if (if_block) if_block.m(div, null);
+			},
+
+			p: function update(changed, state) {
+				if (state.foo) {
+					if (!if_block) {
+						if_block = create_if_block(state, component);
+						if_block.c();
+						if_block.m(div, null);
+					}
+				} else if (if_block) {
+					if_block.u();
+					if_block.d();
+					if_block = null;
+				}
+			},
+
+			u: function unmount() {
+				detachNode(div);
+				if (if_block) if_block.u();
+			},
+
+			d: function destroy() {
+				if (if_block) if_block.d();
+			}
+		};
+	}
+
+	// (2:4) {{#if foo}}
+	function create_if_block(state, component) {
+		var div;
+
+		return {
+			c: function create() {
+				div = createElement("div");
+				div.textContent = "foo";
 			},
 
 			m: function mount(target, anchor) {
 				insertNode(div, target, anchor);
 			},
-
-			p: noop,
 
 			u: function unmount() {
 				detachNode(div);
@@ -68,11 +103,11 @@
 		target.insertBefore(node, anchor);
 	}
 
-	function noop() {}
-
 	function detachNode(node) {
 		node.parentNode.removeChild(node);
 	}
+
+	function noop() {}
 
 	function init(component, options) {
 		component._observers = { pre: blankObject(), post: blankObject() };

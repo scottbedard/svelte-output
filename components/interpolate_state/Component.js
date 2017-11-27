@@ -6,24 +6,24 @@
 }(this, (function () { "use strict";
 
 	function create_main_fragment(state, component) {
-		var div;
+		var div, text;
 
 		return {
 			c: function create() {
 				div = createElement("div");
-				this.h();
-			},
-
-			h: function hydrate() {
-				div.dataset.foo = "bar";
-				div.dataset.helloWorld = "yar";
+				text = createText(state.foo);
 			},
 
 			m: function mount(target, anchor) {
 				insertNode(div, target, anchor);
+				appendNode(text, div);
 			},
 
-			p: noop,
+			p: function update(changed, state) {
+				if (changed.foo) {
+					text.data = state.foo;
+				}
+			},
 
 			u: function unmount() {
 				detachNode(div);
@@ -64,15 +64,23 @@
 		return document.createElement(name);
 	}
 
+	function createText(data) {
+		return document.createTextNode(data);
+	}
+
 	function insertNode(node, target, anchor) {
 		target.insertBefore(node, anchor);
 	}
 
-	function noop() {}
+	function appendNode(node, target) {
+		target.appendChild(node);
+	}
 
 	function detachNode(node) {
 		node.parentNode.removeChild(node);
 	}
+
+	function noop() {}
 
 	function init(component, options) {
 		component._observers = { pre: blankObject(), post: blankObject() };
