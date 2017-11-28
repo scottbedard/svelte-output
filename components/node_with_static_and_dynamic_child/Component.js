@@ -6,14 +6,16 @@
 }(this, (function () { "use strict";
 
 	function create_main_fragment(state, component) {
-		var div, div_1, text, div_2;
+		var div, div_1, text_1, div_2;
 
 		return {
 			c: function create() {
 				div = createElement("div");
 				div_1 = createElement("div");
-				text = createText("\r\n    ");
+				div_1.textContent = "foo";
+				text_1 = createText("\r\n    ");
 				div_2 = createElement("div");
+				div_2.textContent = "bar";
 				this.h();
 			},
 
@@ -25,7 +27,7 @@
 			m: function mount(target, anchor) {
 				insertNode(div, target, anchor);
 				appendNode(div_1, div);
-				appendNode(text, div);
+				appendNode(text_1, div);
 				appendNode(div_2, div);
 			},
 
