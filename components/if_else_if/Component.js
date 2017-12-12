@@ -6,23 +6,57 @@
 }(this, (function () { "use strict";
 
 	function create_main_fragment(state, component) {
-		var div, text_value = state.foo + 'bar', text;
+		var div;
+
+		var current_block_type = select_block_type(state);
+		var if_block = current_block_type && current_block_type(state, component);
 
 		return {
 			c: function create() {
 				div = createElement("div");
-				text = createText(text_value);
+				if (if_block) if_block.c();
 			},
 
 			m: function mount(target, anchor) {
 				insertNode(div, target, anchor);
-				appendNode(text, div);
+				if (if_block) if_block.m(div, null);
 			},
 
 			p: function update(changed, state) {
-				if ((changed.foo) && text_value !== (text_value = state.foo + 'bar')) {
-					text.data = text_value;
+				if (current_block_type !== (current_block_type = select_block_type(state))) {
+					if (if_block) {
+						if_block.u();
+						if_block.d();
+					}
+					if_block = current_block_type && current_block_type(state, component);
+					if (if_block) if_block.c();
+					if (if_block) if_block.m(div, null);
 				}
+			},
+
+			u: function unmount() {
+				detachNode(div);
+				if (if_block) if_block.u();
+			},
+
+			d: function destroy() {
+				if (if_block) if_block.d();
+			}
+		};
+	}
+
+	// (2:4) {{#if foo}}
+	function create_if_block(state, component) {
+		var div;
+
+		return {
+			c: function create() {
+				div = createElement("div");
+				div.textContent = "foo";
+			},
+
+			m: function mount(target, anchor) {
+				insertNode(div, target, anchor);
 			},
 
 			u: function unmount() {
@@ -31,6 +65,34 @@
 
 			d: noop
 		};
+	}
+
+	// (4:18) 
+	function create_if_block_1(state, component) {
+		var div;
+
+		return {
+			c: function create() {
+				div = createElement("div");
+				div.textContent = "bar";
+			},
+
+			m: function mount(target, anchor) {
+				insertNode(div, target, anchor);
+			},
+
+			u: function unmount() {
+				detachNode(div);
+			},
+
+			d: noop
+		};
+	}
+
+	function select_block_type(state) {
+		if (state.foo) return create_if_block;
+		if (state.bar) return create_if_block_1;
+		return null;
 	}
 
 	function Component(options) {
@@ -64,16 +126,8 @@
 		return document.createElement(name);
 	}
 
-	function createText(data) {
-		return document.createTextNode(data);
-	}
-
 	function insertNode(node, target, anchor) {
 		target.insertBefore(node, anchor);
-	}
-
-	function appendNode(node, target) {
-		target.appendChild(node);
 	}
 
 	function detachNode(node) {

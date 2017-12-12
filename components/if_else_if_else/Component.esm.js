@@ -3,70 +3,49 @@
 function create_main_fragment(state, component) {
 	var div;
 
-	var parent = state.parent;
-
-	var each_blocks = [];
-
-	for (var i = 0; i < parent.length; i += 1) {
-		each_blocks[i] = create_each_block(state, parent, parent[i], i, component);
-	}
+	var current_block_type = select_block_type(state);
+	var if_block = current_block_type(state, component);
 
 	return {
 		c: function create() {
 			div = createElement("div");
-
-			for (var i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
+			if_block.c();
 		},
 
 		m: function mount(target, anchor) {
 			insertNode(div, target, anchor);
-
-			for (var i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div, null);
-			}
+			if_block.m(div, null);
 		},
 
 		p: function update(changed, state) {
-			var parent = state.parent;
-
-			if (changed.parent) {
-				for (var i = each_blocks.length; i < parent.length; i += 1) {
-					each_blocks[i] = create_each_block(state, parent, parent[i], i, component);
-					each_blocks[i].c();
-					each_blocks[i].m(div, null);
-				}
-
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].u();
-					each_blocks[i].d();
-				}
-				each_blocks.length = parent.length;
+			if (current_block_type !== (current_block_type = select_block_type(state))) {
+				if_block.u();
+				if_block.d();
+				if_block = current_block_type(state, component);
+				if_block.c();
+				if_block.m(div, null);
 			}
 		},
 
 		u: function unmount() {
 			detachNode(div);
-
-			for (var i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].u();
-			}
+			if_block.u();
 		},
 
 		d: function destroy() {
-			destroyEach(each_blocks);
+			if_block.d();
 		}
 	};
 }
 
-// (2:4) {{#each parent as child}}
-function create_each_block(state, parent, child, child_index, component) {
+// (2:4) {{#if foo}}
+function create_if_block(state, component) {
 	var div;
 
 	return {
 		c: function create() {
 			div = createElement("div");
+			div.textContent = "foo";
 		},
 
 		m: function mount(target, anchor) {
@@ -79,6 +58,56 @@ function create_each_block(state, parent, child, child_index, component) {
 
 		d: noop
 	};
+}
+
+// (4:18) 
+function create_if_block_1(state, component) {
+	var div;
+
+	return {
+		c: function create() {
+			div = createElement("div");
+			div.textContent = "bar";
+		},
+
+		m: function mount(target, anchor) {
+			insertNode(div, target, anchor);
+		},
+
+		u: function unmount() {
+			detachNode(div);
+		},
+
+		d: noop
+	};
+}
+
+// (6:4) {{else}}
+function create_if_block_2(state, component) {
+	var div;
+
+	return {
+		c: function create() {
+			div = createElement("div");
+			div.textContent = "baz";
+		},
+
+		m: function mount(target, anchor) {
+			insertNode(div, target, anchor);
+		},
+
+		u: function unmount() {
+			detachNode(div);
+		},
+
+		d: noop
+	};
+}
+
+function select_block_type(state) {
+	if (state.foo) return create_if_block;
+	if (state.bar) return create_if_block_1;
+	return create_if_block_2;
 }
 
 function Component(options) {
@@ -118,12 +147,6 @@ function insertNode(node, target, anchor) {
 
 function detachNode(node) {
 	node.parentNode.removeChild(node);
-}
-
-function destroyEach(iterations) {
-	for (var i = 0; i < iterations.length; i += 1) {
-		if (iterations[i]) iterations[i].d();
-	}
 }
 
 function noop() {}
