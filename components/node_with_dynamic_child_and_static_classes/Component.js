@@ -6,18 +6,34 @@
 }(this, (function () { "use strict";
 
 	function create_main_fragment(state, component) {
-		var div;
+		var div, text, text_1, span;
 
 		return {
 			c: function create() {
 				div = createElement("div");
+				text = createText(state.foo);
+				text_1 = createText("\r\n    ");
+				span = createElement("span");
+				span.textContent = "baz";
+				this.h();
+			},
+
+			h: function hydrate() {
+				span.className = "foo bar";
 			},
 
 			m: function mount(target, anchor) {
 				insertNode(div, target, anchor);
+				appendNode(text, div);
+				appendNode(text_1, div);
+				appendNode(span, div);
 			},
 
-			p: noop,
+			p: function update(changed, state) {
+				if (changed.foo) {
+					text.data = state.foo;
+				}
+			},
 
 			u: function unmount() {
 				detachNode(div);
@@ -58,15 +74,23 @@
 		return document.createElement(name);
 	}
 
+	function createText(data) {
+		return document.createTextNode(data);
+	}
+
 	function insertNode(node, target, anchor) {
 		target.insertBefore(node, anchor);
 	}
 
-	function noop() {}
+	function appendNode(node, target) {
+		target.appendChild(node);
+	}
 
 	function detachNode(node) {
 		node.parentNode.removeChild(node);
 	}
+
+	function noop() {}
 
 	function init(component, options) {
 		component.options = options;
