@@ -12,3 +12,5 @@ This repo is just a place for me to learn more about [Svelte.js](https://github.
 - [Stand-alone conditional element](https://svelte.technology/repl?gist=1e865f46bb6299da9f26f48ddb89f99c)
 - [Stand-alone conditional element between static text](https://svelte.technology/repl?gist=4529c246ae312bfd5e167fd368547ada)
 - [Stand-alone conditional element between static elements](https://svelte.technology/repl?gist=fc29a7854c76c221b4953c208342e3a9)
+- [Conditionaal elements](https://svelte.technology/repl?gist=76804eca98275a347ad2cb2cca8f8c2a)
+- [Conditional elements between static text](https://svelte.technology/repl?gist=c496b6fac00e1ee1e492fddf43b6d45e)
