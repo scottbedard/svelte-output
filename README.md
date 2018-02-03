@@ -15,3 +15,7 @@ This repo is just a place for me to learn more about [Svelte.js](https://github.
 - [Conditionaal elements](https://svelte.technology/repl?gist=76804eca98275a347ad2cb2cca8f8c2a)
 - [Conditional elements between static text](https://svelte.technology/repl?gist=c496b6fac00e1ee1e492fddf43b6d45e)
 - [Conditional elements between stand-alone if blocks](https://svelte.technology/repl?gist=668fdf7fa90ec3f456142718dc64bbf4)
+
+### Loops
+
+- [Simple loop with interpolation](https://svelte.technology/repl?gist=5c54d43bacd7727bc63c025122b3ce00)
